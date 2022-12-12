@@ -607,7 +607,7 @@ getEpoch() {
   current_time_sec=$(printf '%(%s)T\n' -1)
   [[ ${SHELLEY_TRANS_EPOCH} -eq -1 ]] && echo 0 && return
   byron_end_time=$(( BYRON_GENESIS_START_SEC + ((SHELLEY_TRANS_EPOCH * BYRON_EPOCH_LENGTH * BYRON_SLOT_LENGTH) / 1000) ))
-  echo $(( SHELLEY_TRANS_EPOCH + ( (current_time_sec - byron_end_time) / SLOT_LENGTH / EPOCH_LENGTH ) ))
+  echo $(echo "${SHELLEY_TRANS_EPOCH} + ( (${current_time_sec} - ${byron_end_time}) / ${SLOT_LENGTH} / ${EPOCH_LENGTH})" | bc )
 }
 
 # Description : Offline calculation of start timestamp of input epoch, current if empty.
@@ -646,12 +646,12 @@ getDateFromSlot() {
 timeUntilNextEpoch() {
   current_time_sec=$(printf '%(%s)T\n' -1)
   [[ ${SHELLEY_TRANS_EPOCH} -eq -1 ]] && echo 0 && return
-  echo $(( ((SHELLEY_TRANS_EPOCH * BYRON_SLOT_LENGTH * BYRON_EPOCH_LENGTH) / 1000) + (($(getEpoch) + 1 - SHELLEY_TRANS_EPOCH) * SLOT_LENGTH * EPOCH_LENGTH) - current_time_sec + BYRON_GENESIS_START_SEC ))
+  echo $(echo "((${SHELLEY_TRANS_EPOCH} * ${BYRON_SLOT_LENGTH} * ${BYRON_EPOCH_LENGTH}) / 1000) + (($(getEpoch) + 1 - ${SHELLEY_TRANS_EPOCH}) * ${SLOT_LENGTH} * ${EPOCH_LENGTH}) - ${current_time_sec} + ${BYRON_GENESIS_START_SEC}" | bc )
 }
 
 # Description : Calculation of days, hours, minutes and seconds from time in seconds
 timeLeft() {
-  local T=$1
+  local T=$(printf "%.0f\n" "$1")
   local D=$((T/60/60/24))
   local H=$((T/60/60%24))
   local M=$((T/60%60))
@@ -669,7 +669,7 @@ getSlotTipRef() {
   if [[ ${current_time_sec} -lt ${byron_end_time} ]]; then # In Byron phase
     echo $(( ((current_time_sec - BYRON_GENESIS_START_SEC)*1000) / BYRON_SLOT_LENGTH ))
   else # In Shelley phase
-    echo $(( byron_slots + (( current_time_sec - byron_end_time ) / SLOT_LENGTH ) ))
+    echo "${byron_slots} + (( ${current_time_sec} - ${byron_end_time} ) / ${SLOT_LENGTH} )" | bc
   fi
 }
 
@@ -692,8 +692,8 @@ kesExpiration() {
     tip_ref=$(getSlotTipRef)
   fi
   current_time_sec=$(printf '%(%s)T\n' -1)
-  expiration_time_sec=$(( current_time_sec - ( SLOT_LENGTH * (tip_ref % SLOTS_PER_KES_PERIOD) ) + ( SLOT_LENGTH * SLOTS_PER_KES_PERIOD * remaining_kes_periods ) ))
-  expiration_time_sec_diff=$(( expiration_time_sec - current_time_sec ))
+  expiration_time_sec=$(echo "scale=0; (${current_time_sec} - ( ${SLOT_LENGTH} * (${tip_ref} % ${SLOTS_PER_KES_PERIOD}) ) + ( ${SLOT_LENGTH} * ${SLOTS_PER_KES_PERIOD} * ${remaining_kes_periods} )) /1" | bc)
+  expiration_time_sec_diff=$(echo "${expiration_time_sec} - ${current_time_sec}" | bc )
   printf -v kes_expiration '%(%F %T %Z)T' ${expiration_time_sec}
 }
 
@@ -746,7 +746,7 @@ set_default_vars() {
      date () { gdate "$@"; }
   fi
   [[ -z ${CURL_TIMEOUT} ]] && CURL_TIMEOUT=10
-  [[ -z "${CNODE_HOME}" ]] && CNODE_HOME=/opt/cardano/cnode
+  [[ -z "${CNODE_HOME}" ]] && CNODE_HOME=/opt/cardano/yoda
   CNODE_NAME="$(basename ${CNODE_HOME})"
   CNODE_VNAME=$(tr '[:upper:]' '[:lower:]' <<< ${CNODE_NAME//_HOME/})
   CNODE_VNAME_UPPERCASE=$(tr '[:lower:]' '[:upper:]' <<< ${CNODE_VNAME})
