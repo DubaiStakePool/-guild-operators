@@ -209,8 +209,8 @@ os_dependencies() {
       pkg_list="${pkg_list} libusb ncurses-compat-libs pkgconfig srm"
     elif [[ "${VERSION_ID}" =~ "8" ]] || [[ "${VERSION_ID}" =~ "9" ]]; then
       #RHEL/CentOS/RockyLinux8
-      pkg_opts="${pkg_opts} --allowerasing"
-      pkg_list="${pkg_list} --enablerepo=devel,crb libusbx ncurses-compat-libs pkgconf-pkg-config"
+      pkg_opts="${pkg_opts} --allowerasing --enablerepo=devel,powertools"
+      pkg_list="${pkg_list} libusbx ncurses-compat-libs pkgconf-pkg-config"
     elif [[ "${DISTRO}" =~ Fedora ]]; then
       #Fedora
       pkg_opts="${pkg_opts} --allowerasing"
