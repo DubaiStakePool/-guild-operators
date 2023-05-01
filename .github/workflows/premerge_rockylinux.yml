@@ -41,11 +41,15 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - uses: actions/checkout@v2
-    - name: Extract branch from PR
+    - name: Examine head ref
+      run: echo "The value of head ref is: ${GITHUB_HEAD_REF}"
+    - name: Extract branch from PR (set-output)
       shell: bash
       run: |
-        echo "##[set-output name=branch;]${GITHUB_HEAD_REF}"
-        echo "##[set-output name=owner;]${GITHUB_REPOSITORY_OWNER}"
+        echo "BRANCH=${GITHUB_HEAD_REF}" >> $GITHUB_OUTPUT
+        echo "branch=${GITHUB_HEAD_REF}" >> $GITHUB_OUTPUT
+        echo "OWNER=${GITHUB_REPOSITORY_OWNER}" >> $GITHUB_OUTPUT
+        echo "owner=${GITHUB_REPOSITORY_OWNER}" >> $GITHUB_OUTPUT
       id: pr_branch
     - name: Testing guild-deploy.sh (IO fork of libsodium)
       run: |
