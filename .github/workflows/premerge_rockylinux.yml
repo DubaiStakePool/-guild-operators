@@ -42,7 +42,8 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     - uses: actions/checkout@v2
     - name: Examine head ref
-      run: echo "The value of head ref is: ${GITHUB_HEAD_REF}"
+      run: |
+        echo "The value of head ref is: ${GITHUB_HEAD_REF}"
     - name: Extract branch from PR (set-output)
       shell: bash
       run: |
