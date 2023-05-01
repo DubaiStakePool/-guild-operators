@@ -41,23 +41,27 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - uses: actions/checkout@v2
-    - name: Examine head ref
+    - name: Examine ref
       run: |
-        echo "The value of head ref is: ${GITHUB_HEAD_REF}"
+        echo "The value of head ref is: ${GITHUB_REF}"
     - name: Extract branch from PR (set-output)
       shell: bash
       run: |
-        echo "BRANCH=${GITHUB_HEAD_REF}" >> $GITHUB_OUTPUT
-        echo "branch=${GITHUB_HEAD_REF}" >> $GITHUB_OUTPUT
+        echo "BRANCH=${GITHUB_REF}" >> $GITHUB_OUTPUT
+        echo "branch=${GITHUB_REF}" >> $GITHUB_OUTPUT
         echo "OWNER=${GITHUB_REPOSITORY_OWNER}" >> $GITHUB_OUTPUT
         echo "owner=${GITHUB_REPOSITORY_OWNER}" >> $GITHUB_OUTPUT
       id: pr_branch
     - name: Testing guild-deploy.sh (IO fork of libsodium)
       run: |
+        echo export BRANCH=${{ steps.pr_branch.outputs.branch }}
         export BRANCH=${{ steps.pr_branch.outputs.branch }}
+        if [[ -z "${BRANCH}" ]] ; then export BRANCH=${BRANCH} ; fi
+        echo export G_ACCOUNT=${{ steps.pr_branch.outputs.owner }}
         export G_ACCOUNT=${{ steps.pr_branch.outputs.owner }}
+        echo export COMMIT=$(git rev-parse --short "$GITHUB_SHA")
         export COMMIT=$(git rev-parse --short "$GITHUB_SHA")
-        docker build . --file files/tests/pre-merge/rockylinux-guild-deploy.sh-l.containerfile --compress --build-arg BRANCH --build-arg COMMIT --build-arg G_ACCOUNT --tag ghcr.io/cardano-community/pre-merge-rockylinux:guild-deploy-l_${COMMIT}
+        docker build . --file files/tests/pre-merge/rockylinux-guild-deploy.sh-l.containerfile --compress --build-arg BRANCH=${BRANCH} --build-arg COMMIT=${COMMIT} --build-arg G_ACCOUNT=${G_ACCOUNT} --tag ghcr.io/cardano-community/pre-merge-rockylinux:guild-deploy-l_${COMMIT}
     - name: Push pre-merge-rockylinux:guild-deploy-l_${COMMIT}
       run: |
         export COMMIT=$(git rev-parse --short "$GITHUB_SHA")
@@ -68,7 +72,7 @@ jobs:
         export G_ACCOUNT=${{ steps.pr_branch.outputs.owner }}
         export COMMIT=$(git rev-parse --short "$GITHUB_SHA")
         echo "Working from PR Branch ${G_ACCOUNT}/guild-operators/${BRANCH} on Commit ${COMMIT}"
-        docker build . --file files/tests/pre-merge/rockylinux-cabal-l.containerfile --compress --build-arg BRANCH --build-arg COMMIT --tag ghcr.io/cardano-community/pre-merge-rockylinux:cabal-l_${COMMIT}
+        docker build . --file files/tests/pre-merge/rockylinux-cabal-l.containerfile --compress --build-arg BRANCH=${BRANCH} --build-arg COMMIT=${COMMIT} --tag ghcr.io/cardano-community/pre-merge-rockylinux:cabal-l_${COMMIT}
     - if: ${{ inputs.trivy_scan }}
       name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
