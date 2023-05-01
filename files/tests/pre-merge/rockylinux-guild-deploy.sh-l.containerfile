@@ -15,11 +15,12 @@ ENV \
 WORKDIR /
 
 RUN dnf -y --allowerasing install findutils &&\
-    dnf clean all &&\
-    mkdir -pv /root/.local/bin /root/.ghcup/bin &&\
-    curl -s -f -k -o guild-deploy.sh "https://raw.githubusercontent.com/${G_ACCOUNT}/guild-operators/${BRANCH}/scripts/cnode-helper-scripts/guild-deploy.sh" &&\
-    chmod 755 guild-deploy.sh &&\
-    export SUDO='N' &&\
+    dnf clean all
+RUN mkdir -pv /root/.local/bin /root/.ghcup/bin
+RUN curl -s -f -k -o guild-deploy.sh "https://raw.githubusercontent.com/${G_ACCOUNT}/guild-operators/${BRANCH}/scripts/cnode-helper-scripts/guild-deploy.sh"
+RUN chmod 755 guild-deploy.sh
+RUN cat guild-deploy.sh
+RUN export SUDO='N' &&\
     export G_ACCOUNT="${G_ACCOUNT}" &&\
     export UPDATE_CHECK='N' &&\
     ./guild-deploy.sh -b "${BRANCH}" -s pblcowx
