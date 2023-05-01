@@ -14,10 +14,10 @@ ENV \
 
 WORKDIR /
 
-RUN dnf -y --allowerasing install findutils &&\
+RUN dnf -y --allowerasing install findutils wget &&\
     dnf clean all
 RUN mkdir -pv /root/.local/bin /root/.ghcup/bin
-RUN curl -L -s -f -k -o guild-deploy.sh "https://raw.githubusercontent.com/${G_ACCOUNT}/guild-operators/${BRANCH}/scripts/cnode-helper-scripts/guild-deploy.sh"
+RUN wget "https://raw.githubusercontent.com/${G_ACCOUNT}/guild-operators/${BRANCH}/scripts/cnode-helper-scripts/guild-deploy.sh"
 RUN chmod 755 guild-deploy.sh
 RUN cat guild-deploy.sh
 RUN export SUDO='N' &&\
